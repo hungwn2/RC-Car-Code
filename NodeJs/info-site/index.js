@@ -3,11 +3,11 @@ const fs = require('fs');
 const path = require('path');
 
 function readContent(file, res){
-    readFile(file, "utf-8", (err, data)=>{
+    fs.readFile(file, "utf-8", (err, data)=>{
         if (err){
             console.error(`Error reading file ${file}: ${err.message}`);
-            res.writeHead(500, {"Content-type": "text/html"});
-            res.end("<h1>500 - Internal Server Error</h1>");
+            res.writeHead(404, {"Content-type": "text/html"});
+            res.end('<h1>500 - Internal Server Error</h1');
         }
         else{
             res.writeHead(200, { "Content-Type": "text/html" });
@@ -17,10 +17,10 @@ function readContent(file, res){
 }
 const server=http.createServer((req, res)=>{
     file="";
-    switch(req.url){
-        case '/':
-            file=path.join(__dirname, "index.html");
-            break;
+        switch(req.url){
+            case '/':
+                file=path.join(__dirname, "index.html");
+                break;
             case '/about':
                 file = path.join(__dirname,"about.html");
                 break;
@@ -32,7 +32,7 @@ const server=http.createServer((req, res)=>{
                 res.writeHead(404);
                 break;
     }
-    readFileContetn(file,res);
+    readFileContent(file,res);
 });
 server.listen(prototype, ()=>{
     console.log(`Server is running on http://localhost:${port}`);

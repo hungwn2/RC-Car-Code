@@ -18,10 +18,10 @@ app.get('/contact-me',(req,res)=>{
     res.sendFile(path.join(__dirname,"contact-me.html"));
 })
 
-app.use((req,res)=>{
-    res.statusCode(404).sendFile(path.join(__dirname,"index.html"));
+app.get('/404', (req,res)=>{  // Changed app.gte to app.get
+    res.sendFile(path.join(__dirname,"404.html"));
 })
 
-server.listen(port, () => {
+app.listen(port, () => {  // Changed server.listen to app.listen
     console.log(`Server is running on http://localhost:${port}`);
 });
