@@ -1,43 +1,58 @@
 const express=require('express');
-const path=require('path');
-const fs=require('fs');
 const multer=require('multer');
-const fileUplaod=require('express0fileupload');
+const {PrismaClient}=require('@prisma/client');
+const prisma=new PrismaClient();
+const cloudinary=require('cloudinary').v2;
+const {CloudinaryStorage}=require('multer-storage-cloudinary');
+const dotenv=require('dotenv').config();
+const path=require('path');
 const app=express();
 const port=3000;
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'file_uploads',
+    allowed_formats: ['jpg', 'png', 'pdf', 'docx'],
+  },
+});
+
+const upload=multer({storage});
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
 
-// Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+app.get('/', (req, res)=>{
+  res.render('index', {uploadedUrl:null});
+})
 
-const storage=multer.diskStorage({
-    destination: function (req, file, cb){
-        cb(null, 'uplads/');
+app.post('/upload', upload.single('file'), async (req, res) => {
+  const { originalname, mimetype, path: url } = req.file;
+
+  await prisma.uploadedFile.create({
+    data: {
+      url: url,
+      filename: originalname,
+      mimetype: mimetype,
     },
-    filename: function (res, file, c){
-        // Create unique filename with original extension
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-      }
-    });
-    
-    const fileFilter=(req, file, cb)=>{
-        const allowedFileTypes=['image/jpeg', 'image/png', 'image/gif', 
-    'application/pdf', 
-    'application/msword', 
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain'];
-    if (allowedFileTypes.includes(file.mimetype)){
-        cb(null, true);
-    }
-    else{
-    cb(new Error('File type not supported'));
-    }
-};
+  });
+
+  res.render('index', { uploadedUrl: url });
+});
+
+app.get('/files', async (req, res) => {
+  const files = await prisma.uploadedFile.findMany({
+    orderBy: { uploaded: 'desc' },
+  });
+  res.render('files', { files });
+});
+
+
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});

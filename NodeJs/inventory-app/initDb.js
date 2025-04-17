@@ -1,11 +1,9 @@
 const pool = require('./db/pool');
 
-// Database initialization script
 const initializeDatabase = async () => {
   console.log('Initializing database...');
   
   try {
-    // Create tables
     await pool.query(`
       CREATE TABLE IF NOT EXISTS pokemon (
         id SERIAL PRIMARY KEY,
@@ -25,14 +23,12 @@ const initializeDatabase = async () => {
       )
     `);
     
-    // Check if the table is empty
     const result = await pool.query('SELECT COUNT(*) FROM pokemon');
     const count = parseInt(result.rows[0].count);
     
-    // Insert sample data if the table is empty
     if (count === 0) {
       console.log('Adding sample Pokémon to the database...');
-      
+      //add some bullshit if empty
       await pool.query(`
         INSERT INTO pokemon (name, type, level, hp, attack, defense, special_attack, special_defense, speed, description, image_url) VALUES
         ('Pikachu', 'Electric', 25, 35, 55, 40, 50, 50, 90, 'When several of these Pokémon gather, their electricity could build and cause lightning storms.', 'https://assets.pokemon.com/assets/cms2/img/pokedex/full/025.png'),
@@ -54,8 +50,7 @@ const initializeDatabase = async () => {
   }
 };
 
-// Run the initialization
 initializeDatabase().then(() => {
-  console.log('Database setup complete. You can now start your application.');
+  console.log('Database setup complete.');
   pool.end();
 });

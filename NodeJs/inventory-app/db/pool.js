@@ -1,12 +1,12 @@
-const { Pool } = require("pg");
-require("dotenv").config();
+const { Pool } = require('pg');
 
+const pool = new Pool({
+  user: 'hungwn2',
+  host: 'localhost',
+  database: 'pokemon_inventory',
+  password: 'hibanyin420Z',
+  port: 5432,
+});
+//steal all u want
 
-
-module.exports = new Pool({
-    host: "localhost", // or wherever the db is hosted
-    user: "hungwn2",
-    database: "inventory",
-    password: "hibanyin420Z",
-    port: 5432 // The default port
-  });
+module.exports = pool;

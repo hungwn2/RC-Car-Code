@@ -5,26 +5,21 @@ const pokemonRoutes = require('./routes/pokemonRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Set view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Routes
 app.use('/api/pokemon', pokemonRoutes);
 
-// Frontend Routes
 app.get('/', async (req, res) => {
   try {
     let pokemon = [];
     const searchTerm = req.query.search;
     
     if (searchTerm) {
-      // Get Pokemon by search term
       const response = await fetch(`http://localhost:${PORT}/api/pokemon/search?term=${encodeURIComponent(searchTerm)}`);
       if (response.ok) {
         pokemon = await response.json();
