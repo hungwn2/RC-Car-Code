@@ -59,6 +59,12 @@ app.use((err, req, res, next) => {
   });
 });
 
+
+sequelize.authenticate()
+  .then(() => console.log('✅ Connected to DB on Render'))
+  .catch((err) => console.error('❌ DB Connection failed on Render:', err));
+
+  
 const PORT = process.env.PORT || 3000;
 sequelize
   .sync()
