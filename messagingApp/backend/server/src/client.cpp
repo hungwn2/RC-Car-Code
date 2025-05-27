@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "client.h"
+#include <iostream>
+#include <cstring>
 #include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h> 
+#include <arpa/inet.h>
+#include <sys/socket.h>
 
-client::client(const std::string& server_address, int port): server_address(server_address), port(port), client_socket(-1){}
+client::client(const std::string& server_address, int port): 
+ip(server_ip), port(server_port), sockfd(-1){}
 
 client::~client(){
     if (client_socket!=-1){
@@ -15,21 +15,41 @@ client::~client(){
     }
 }
 
-void client::connect_and_send(){
-    sockaddr_in server_add;
-    char buffer[256];
-    ssize_t n;
-    client_socket=socket(AF_INET, SOCK_STREAM, 0);
-    if (client_socket<0){
-        std::cerr << "Error opening socket" << std::endl;
-        return;
+bool client::connectToServer(){
+    sockfd=socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd<0){
+        perror("Socket creation fail");
+        return false;
     }
+    sockaddr_in server_addr{};
     server_addr.sin_family=AF_INET;
     server_addr.sin_port=htons(port);
-    server_addr.sin_addr.s_addr=
+    inet_pton(AF_INET, ip.c_str(), &server_addr.sin_addr);
+    if(connect(sockfd, (sockaddr*)&server_addr, sizeof(server_addr))<0){
+        perr("Connection failed");
+        return false;
+    }
+    std::cout<<"Connected to server \n";
+    return true;
 }
 
+bool Client::sendMessage(const std::string& message){
+    if (send(sockfd, message.c_str(), message.size(), 0)<0){
+        perror("send failed");
+        return false;
+    }
+    return true;
+}
 
+std::string client::receiveMessage(){
+    char buffer[256];
+    bzero(buffer, 256);
+    ssize_t n=recv(sockfd, buffer, 255, 0);
+    if (n<=0){
+        return "Disconnected from server";
+    }
+    return std::string(buffer);
+}
 
 // void error(const char *msg){
 //     perror(msg);

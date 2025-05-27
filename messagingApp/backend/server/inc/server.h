@@ -1,28 +1,22 @@
-#ifndef TCPSERVER_H
-
-#define TCPSERVER_H
-#define PORTNO 3000
-#include <iostream>
-#include <cstring>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <thread>
-#include <vector>
+#pragma once
+#define ASIO_STANDALONE
+#include "crow_all.h"
 #include <string>
+#include <unordered_map>
+#include <vector>
+#include <mutex>
+
 class server{
     public:
         server(int port);
         ~server();
         void start();
+        void handle_client(int socket);
+        void run();
     private:
-        crow::SimpleApp app;
+        int port;
         int server_socket;
+        crow::SimpleApp app;
         std::unordered_map<std::string, std::vector<std::string>> messages;
         std::mutex mtx;
-        void handle_client(int client_socket);  
-        int server_socket;
-        int port;
-}
-#endif
+};
